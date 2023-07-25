@@ -13,3 +13,6 @@ WEBAPP_HOST = 'localhost'  # or ip
 WEBAPP_PORT = 8000
 
 BOT_DEBUG = env.bool("BOT_DEBUG", default=True)
+
+CHAT_ID_BEAR = -804109204
+CHAT_ID_TEST = -951650833

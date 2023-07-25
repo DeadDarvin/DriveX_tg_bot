@@ -1,9 +1,9 @@
 from aiogram import executor
-from constans import BOT_DEBUG, WEBHOOK_URL, WEBHOOK_PATH, WEBAPP_PORT, WEBAPP_HOST
-
-from user_side import dp, bot
 import logging
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
+
+from constans import BOT_DEBUG, WEBHOOK_URL, WEBHOOK_PATH, WEBAPP_PORT, WEBAPP_HOST
+from bot.handlers import bot, dp
 
 
 async def on_startup(dp):

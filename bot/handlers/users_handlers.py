@@ -5,12 +5,13 @@ from aiogram.types import InlineKeyboardButton
 from bot.bot_creater import bot, dp
 from bot.actioners.deep_linking_actioner import deep_linking_handler
 from bot.actioners.subscribe_actioner import user_subscribe_actioner
-from bot.api_requests import send_user_tg_to_api
+from bot.http_clients.drivex_client import send_user_tg_to_api
+from bot.constants import START_TEXT, START_IMAGE_URL
+from bot.bot_creater import logger
 
 from typing import Optional
 import json
-from bot.bot_creater import logger
-
+import asyncio
 
 # keyboard for /start-message
 btn_1 = InlineKeyboardButton('Community', url="https://t.me/InterCity_app")
@@ -49,13 +50,18 @@ async def start(message: types.Message):
 
     encoded_payload = await _extract_referral_code(message.text)  # Split string and give payload string
     if encoded_payload:
-        await deep_linking_handler(encoded_payload, user_data)
+        asyncio.create_task(deep_linking_handler(encoded_payload, user_data))  # Will be payload-handle
     else:
-        await send_user_tg_to_api(json.dumps(user_data))
+        asyncio.create_task(send_user_tg_to_api(json.dumps(user_data)))  # Send without payload
 
-    await user_subscribe_actioner(bot, user_id)
+    asyncio.create_task(user_subscribe_actioner(bot, user_id))  # Check subscribe and creation checks
 
-    await bot.send_message(user_id, text=f"Привет, {username}", reply_markup=keyboard)
+    await bot.send_photo(
+        chat_id=user_id,
+        photo=START_IMAGE_URL,
+        caption=START_TEXT,
+        reply_markup=keyboard
+    )
 
 
 @dp.message_handler(commands=['test', ])

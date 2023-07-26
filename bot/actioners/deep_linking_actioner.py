@@ -1,4 +1,4 @@
-from bot.api_requests import send_user_tg_to_api
+from bot.http_clients.drivex_client import send_user_tg_to_api
 from bot.bot_creater import logger
 from typing import Optional
 import base64
@@ -13,12 +13,6 @@ async def _decode_payload_data(encoded_param_value: str) -> str:
     decoded_param_value = decoded_from_bytes.decode("ascii")
 
     return decoded_param_value
-
-
-async def _get_parameter_from_link(param_string: str) -> tuple[str, str]:
-    key = re.search("^.*_", param_string).group()  # Example-key: e_
-    value = re.sub(r"^.*_", "", param_string)  # Example-value: W2NoZXRreXBhY2FuQG1haWwucnVdCg==
-    return key, value
 
 
 async def _email_handler(decoded_email: str, user_data: dict):

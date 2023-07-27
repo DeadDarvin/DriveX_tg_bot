@@ -11,7 +11,7 @@ def create_session(function):
     return wrapper
 
 
-def retry_until_success(attempts: int):
+def retry_until_success(attempts: int, pause: int):
     """
     Run function until success or attempts finished.
     Make 3 seconds pause between try.
@@ -24,7 +24,7 @@ def retry_until_success(attempts: int):
                 if success:
                     break
                 else:
-                    await asyncio.sleep(3)
+                    await asyncio.sleep(pause)
         return wrapper
     return decorator
 

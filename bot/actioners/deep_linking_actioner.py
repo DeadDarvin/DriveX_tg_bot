@@ -4,6 +4,7 @@ from typing import Optional
 import base64
 import re
 import json
+from datetime import datetime
 
 
 async def _decode_payload_data(encoded_param_value: str) -> str:
@@ -39,7 +40,7 @@ async def deep_linking_handler(encoded_payload: str, user_data: dict):
     """ Определеят логику, зависящую от param_key """
     param_key = await _is_valid_parameter_key(encoded_payload)  # Example: e_
     if param_key is None:
-        await logger.warning("Invalid parameter_key!")
+        await logger.warning(f"{datetime.now()}:::USER:{user_data}:::INVALID_KEY!")
         return
 
     param_value = await _get_parameter_value(encoded_payload)  # Example: W2NoZXwucnVdCg
@@ -49,6 +50,6 @@ async def deep_linking_handler(encoded_payload: str, user_data: dict):
         if param_key == "e_":  # Email
             await _email_handler(decoded_payload, user_data)
     except ValueError as err:
-        await logger.error(f"Attempt to hack: Correct key, but incorrect value: {err}")
-
+        await logger.warning(f"{datetime.now()}:::USER:{user_data}:::"
+                             f"Attempt to hack: Correct key, but incorrect value: {err}")
 

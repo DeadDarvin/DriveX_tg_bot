@@ -3,9 +3,9 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot
 
 from bot.http_clients.drivex_client import send_subscribed_user_ack
-from bot.constants.bot_settings import CHAT_ID_TEST
 from bot.constants.bot_settings import FIRST_CHECK_TIME, SECOND_CHECK_TIME, THIRD_CHECK_TIME
-from bot.constants.texts import TEXT_IF_USER_SUBSCRIBED
+from bot.constants.texts import TEXT_IF_USER_SUBSCRIBED, TEXT_IF_USER_NOT_SUBSCRIBED
+from bot.constants.keyboards import IM_SUBSCRIBE_BUTTON
 from bot.bot_creater import logger
 
 from datetime import datetime, timedelta
@@ -14,10 +14,16 @@ import asyncio
 import json
 
 
-async def _check_user_subscribe(bot, user_id) -> bool:
+check_time_delays = {
+    2: 6, 3: 6, 4: 6, 5: 9, 6: 3, 7: 60, 8: 60, 9: 60, 10: 60,
+    11: 300, 12: 300, 13: 300, 14: 300, 15: 300, 16: 300, 17: 300, 18: 300, 19: 300, 20: 300
+}
+
+
+async def check_user_subscribe(bot, user_id) -> bool:
     await logger.debug("Run check_user_subscribe function!")
 
-    user_status = await bot.get_chat_member(chat_id=CHAT_ID_TEST, user_id=user_id)
+    user_status = await bot.get_chat_member(chat_id=-1001905613285, user_id=user_id)
     await logger.debug(type(user_status))
     if isinstance(user_status, ChatMemberLeft):
         return False
@@ -25,10 +31,32 @@ async def _check_user_subscribe(bot, user_id) -> bool:
         return True
 
 
-async def _subscribe_status_message_actioner(bot: Bot, user_id, check_number: str):
-    await logger.debug("Running _subscribe_status_message_actioner")
+async def _create_delayed_check(bot: Bot, user_id, check_number: int, run_time):
+    """ Создает таймер """
+    await logger.info(f"{datetime.now()}:::USER_ID:{user_id}:::CREATION_DELAYED_CHECK!")
 
-    is_subscribed_user = await _check_user_subscribe(bot, user_id)
+    scheduler = AsyncIOScheduler(timezone=utc)
+    scheduler.add_job(subscribe_status_message_actioner, trigger='date', run_date=run_time,
+                      kwargs={'bot': bot, 'user_id': user_id, 'check_number': check_number})
+    scheduler.start()
+
+
+async def subscribe_status_message_actioner(bot: Bot, user_id, check_number: int = 1):
+    """
+    General actioner for creation delayed_examinations.
+    Check user subscribe status. Function create next delayed_examination if user is not subscribed yed.
+    Send keyboard to user after 10 examination. Examinations will stop if user subscribe.
+    Or examination number is 20.
+    """
+    await logger.info(f"{datetime.now()}:::USER_ID:{user_id}:::START {check_number} EXAMINATION!")
+
+    if check_number == 6:  # Last check
+        return
+    if check_number == 4:
+        await bot.send_message(user_id, text=TEXT_IF_USER_NOT_SUBSCRIBED, reply_markup=IM_SUBSCRIBE_BUTTON)
+
+    #  Directly check
+    is_subscribed_user = await check_user_subscribe(bot, user_id)
     if is_subscribed_user:
         asyncio.create_task(send_subscribed_user_ack(json.dumps({"user_id": user_id})))
         await bot.send_message(user_id, text=TEXT_IF_USER_SUBSCRIBED)
@@ -38,53 +66,8 @@ async def _subscribe_status_message_actioner(bot: Bot, user_id, check_number: st
         await logger.info(f"CHECK RESULT: user with id:{user_id} isn't subscribed yet!")
 
         current_time = datetime.utcnow()
-        if check_number == "FIRST":
-            await _create_second_delayed_check(bot, user_id, current_time + timedelta(seconds=SECOND_CHECK_TIME))
-
-        if check_number == "SECOND":
-            await _create_third_delayed_check(bot, user_id, current_time + timedelta(seconds=THIRD_CHECK_TIME))
-
-        if check_number == "THIRD":
-            await logger.info("Finished all checks")
+        current_delay = check_time_delays[check_number+1]
+        next_check_time = current_time + timedelta(seconds=current_delay)
+        await _create_delayed_check(bot, user_id, check_number+1, next_check_time)
 
 
-async def _create_third_delayed_check(bot: Bot, user_id, run_time):
-    await logger.debug("Running third_delayed_check!")
-
-    scheduler = AsyncIOScheduler(timezone=utc)
-    scheduler.add_job(_subscribe_status_message_actioner, trigger='date', run_date=run_time,
-                      kwargs={'bot': bot, 'user_id': user_id, 'check_number': "THIRD"})
-    scheduler.start()
-
-
-async def _create_second_delayed_check(bot: Bot, user_id, run_time):
-    await logger.debug("Running second_delayed_check!")
-
-    scheduler = AsyncIOScheduler(timezone=utc)
-    scheduler.add_job(_subscribe_status_message_actioner, trigger='date', run_date=run_time,
-                      kwargs={'bot': bot, 'user_id': user_id, 'check_number': "SECOND"})
-    scheduler.start()
-
-
-async def _create_first_delayed_check(bot: Bot, user_id, run_time):
-    await logger.debug("Running first_delayed_check!")
-
-    scheduler = AsyncIOScheduler(timezone=utc)
-    scheduler.add_job(_subscribe_status_message_actioner, trigger='date', run_date=run_time,
-                      kwargs={'bot': bot, 'user_id': user_id, 'check_number': "FIRST"})
-    scheduler.start()
-
-
-async def user_subscribe_actioner(bot, user_id):
-    """
-    Firstly - check user subscribe status.
-    Secondly - create delayed_checks.
-    """
-    await logger.debug("Running subscribe_actioner")
-
-    if await _check_user_subscribe(bot, user_id):  # If user already subscribed
-        await logger.info(f"User with id: {user_id} is already subscribed")
-        return
-
-    current_time = datetime.utcnow()
-    await _create_first_delayed_check(bot, user_id, current_time + timedelta(seconds=FIRST_CHECK_TIME))

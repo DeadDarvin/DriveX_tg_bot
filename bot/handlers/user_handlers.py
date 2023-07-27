@@ -1,24 +1,19 @@
 from aiogram import types
-from aiogram.types import InlineKeyboardMarkup
-from aiogram.types import InlineKeyboardButton
 
 from bot.bot_creater import bot, dp
 from bot.actioners.deep_linking_actioner import deep_linking_handler
-from bot.actioners.subscribe_actioner import user_subscribe_actioner
+from bot.actioners.subscribe_actioner import subscribe_status_message_actioner
 from bot.http_clients.drivex_client import send_user_tg_to_api
+from bot.http_clients.drivex_client import send_subscribed_user_ack
 from bot.constants.texts import START_TEXT, START_IMAGE_URL
+from bot.constants.keyboards import START_KEYBOARD
 from bot.constants.bot_settings import ADMIN_ID
 from bot.bot_creater import logger
-
+from bot.actioners.subscribe_actioner import check_user_subscribe
 from typing import Optional
 import json
 import asyncio
-
-# keyboard for /start-message
-btn_1 = InlineKeyboardButton('Community', url="https://t.me/InterCity_app")
-btn_2 = InlineKeyboardButton("Support", url="https://t.me/InterCitySupport")
-keyboard = InlineKeyboardMarkup().add(btn_1).add(btn_2)
-
+from datetime import datetime
 
 async def _extract_referral_code(encoded_string):
     """
@@ -43,25 +38,29 @@ async def start(message: types.Message):
     Check deep-linking. Send user_data to api-driveX.
     Send message with keyboard to user.
     """
-    await logger.debug("Run start-handler!")
     user_id = message.from_user.id
     username = message.from_user.username
+    await logger.info(f"{datetime.now()}:::USER_ID:{user_id}:::START!")
 
     user_data: dict = await _form_user_data_from_message(user_id, username)
 
     encoded_payload = await _extract_referral_code(message.text)  # Split string and give payload string
     if encoded_payload:
+        await logger.info(f"{datetime.now()}:::USER_ID:{user_id}:::WITH_PAYLOAD!")
         asyncio.create_task(deep_linking_handler(encoded_payload, user_data))  # Will be payload-handle
     else:
+        await logger.info(f"{datetime.now()}:::USER_ID:{user_id}:::WITHOUT_PAYLOAD!")
         asyncio.create_task(send_user_tg_to_api(json.dumps(user_data)))  # Send without payload
 
-    asyncio.create_task(user_subscribe_actioner(bot, user_id))  # Check subscribe and creation checks
+    is_subscribed = await check_user_subscribe(bot, user_id)
+    if not is_subscribed:
+        asyncio.create_task(subscribe_status_message_actioner(bot, user_id))  # Check subscribe and creation checks
 
     await bot.send_photo(
         chat_id=user_id,
         photo=START_IMAGE_URL,
         caption=START_TEXT,
-        reply_markup=keyboard
+        reply_markup=START_KEYBOARD
     )
 
 
@@ -74,3 +73,12 @@ async def start(message: types.Message):
 async def get_chat_id(message: types.Message):
     chat_id = message.chat.id
     await bot.send_message(ADMIN_ID, text=f"Айди нашего чата: {chat_id}")
+
+
+@dp.callback_query_handler(text="subscribe")
+async def check_user_is_subscribed(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    is_subscribed = await check_user_subscribe(bot, user_id)
+    await logger.info(f"{datetime.now()}:::USER_ID:{user_id}:::CLICK_SUBS_BUTTON!")
+    if is_subscribed:
+        asyncio.create_task(send_subscribed_user_ack(json.dumps({"user_id": user_id})))

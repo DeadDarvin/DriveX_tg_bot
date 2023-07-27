@@ -1,7 +1,7 @@
 import json
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientError
-
+from bot.constants.http_settings import PAUSE_BETWEEN_REQUESTS
 from bot.bot_creater import logger
 from bot.constants.http_settings import USER_DATA_ATTEMPTS, SUBSCRIBE_ACK_ATTEMPTS
 from bot.constants.http_settings import USER_DATA_ENDPOINT, SUBSCRIBE_ACK_ENDPOINT
@@ -21,8 +21,9 @@ async def _request(session: ClientSession, url: str, user_data: json):
 
 
 @create_session
-@retry_until_success(attempts=USER_DATA_ATTEMPTS)
+@retry_until_success(attempts=USER_DATA_ATTEMPTS, pause=PAUSE_BETWEEN_REQUESTS)
 async def send_user_tg_to_api(session: ClientSession, user_data: json):
+    await logger.debug(user_data)
     try:
         is_completed = await _request(session, USER_DATA_ENDPOINT, user_data)
         return is_completed
@@ -32,8 +33,9 @@ async def send_user_tg_to_api(session: ClientSession, user_data: json):
 
 
 @create_session
-@retry_until_success(attempts=SUBSCRIBE_ACK_ATTEMPTS)
+@retry_until_success(attempts=SUBSCRIBE_ACK_ATTEMPTS, pause=PAUSE_BETWEEN_REQUESTS)
 async def send_subscribed_user_ack(session: ClientSession, user_data: json):
+    await logger.debug(user_data)
     try:
         status_code = await _request(session, SUBSCRIBE_ACK_ENDPOINT, user_data)
         return status_code

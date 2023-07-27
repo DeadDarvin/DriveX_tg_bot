@@ -1,7 +1,7 @@
 ARG BASE_IMAGE=python:3.9-slim-buster
 FROM $BASE_IMAGE
 
-WORKDIR .
+
 
 # system update & package install
 RUN apt-get -y update && \
@@ -18,7 +18,8 @@ RUN python3 -m pip install --user --upgrade pip && \
     python3 -m pip install -r requirements.txt
 
 COPY . .
-
+WORKDIR .
+EXPOSE 8000
 
 # Execute
 CMD ["python", "main.py"]

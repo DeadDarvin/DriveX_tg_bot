@@ -4,6 +4,7 @@ from aiogram import Bot
 
 from bot.http_clients.drivex_client import send_subscribed_user_ack
 from bot.constants.bot_settings import CHAT_ID_TEST
+from bot.constants.bot_settings import FIRST_CHECK_TIME, SECOND_CHECK_TIME, THIRD_CHECK_TIME
 from bot.constants.texts import TEXT_IF_USER_SUBSCRIBED
 from bot.bot_creater import logger
 
@@ -16,7 +17,7 @@ import json
 async def _check_user_subscribe(bot, user_id) -> bool:
     await logger.debug("Run check_user_subscribe function!")
 
-    user_status = await bot.get_chat_member(chat_id=CHAT_ID_TEST, user_id=user_id)  #5703225789)
+    user_status = await bot.get_chat_member(chat_id=CHAT_ID_TEST, user_id=user_id)
     await logger.debug(type(user_status))
     if isinstance(user_status, ChatMemberLeft):
         return False
@@ -38,10 +39,10 @@ async def _subscribe_status_message_actioner(bot: Bot, user_id, check_number: st
 
         current_time = datetime.utcnow()
         if check_number == "FIRST":
-            await _create_second_delayed_check(bot, user_id, current_time + timedelta(seconds=8))
+            await _create_second_delayed_check(bot, user_id, current_time + timedelta(seconds=SECOND_CHECK_TIME))
 
         if check_number == "SECOND":
-            await _create_third_delayed_check(bot, user_id, current_time + timedelta(seconds=13))
+            await _create_third_delayed_check(bot, user_id, current_time + timedelta(seconds=THIRD_CHECK_TIME))
 
         if check_number == "THIRD":
             await logger.info("Finished all checks")
@@ -86,4 +87,4 @@ async def user_subscribe_actioner(bot, user_id):
         return
 
     current_time = datetime.utcnow()
-    await _create_first_delayed_check(bot, user_id, current_time + timedelta(seconds=5))
+    await _create_first_delayed_check(bot, user_id, current_time + timedelta(seconds=FIRST_CHECK_TIME))

@@ -6,7 +6,8 @@ from bot.bot_creater import bot, dp
 from bot.actioners.deep_linking_actioner import deep_linking_handler
 from bot.actioners.subscribe_actioner import user_subscribe_actioner
 from bot.http_clients.drivex_client import send_user_tg_to_api
-from bot.constants import START_TEXT, START_IMAGE_URL
+from bot.constants.texts import START_TEXT, START_IMAGE_URL
+from bot.constants.bot_settings import ADMIN_ID
 from bot.bot_creater import logger
 
 from typing import Optional
@@ -64,12 +65,12 @@ async def start(message: types.Message):
     )
 
 
-@dp.message_handler(commands=['test', ])
+@dp.message_handler(commands=['team_test_focus', ])
 async def start(message: types.Message):
     await bot.send_message(message.chat.id, "Done")
 
-# @dp.message_handler()
-# async def get_chat_id(message: types.Message):
-#     print(message.text)
-#     chat_id = message.chat.id
-#     await bot.send_message(1338248618, text=f"Это чат айди: {chat_id}")
+
+@dp.message_handler(content_types=['new_chat_members', ])
+async def get_chat_id(message: types.Message):
+    chat_id = message.chat.id
+    await bot.send_message(ADMIN_ID, text=f"Айди нашего чата: {chat_id}")

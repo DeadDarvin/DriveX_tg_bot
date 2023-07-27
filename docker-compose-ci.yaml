@@ -3,8 +3,11 @@ services:
   DriveX_bot:
     container_name: DriveX_bot
     image: drive_x_bot # Specify the name of the Docker image to be built
-#    environment:
-
+    restart: always
+    environment:
+      TG_BOT_TOKEN: bot_token
+      API_KEY: api_key
+      BOT_DEBUG: True
     build:
       context: .
       dockerfile: Dockerfile

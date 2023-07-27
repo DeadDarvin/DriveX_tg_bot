@@ -1,13 +1,15 @@
 from aiogram import executor
-from aiogram.contrib.middlewares.logging import LoggingMiddleware
 
-from constants.bot_settings import BOT_DEBUG, WEBHOOK_URL, WEBAPP_PORT, WEBAPP_HOST, WEBHOOK_PATH
+from bot.constants.bot_settings import BOT_DEBUG
+from bot.constants.bot_settings import WEBHOOK_URL, WEBHOOK_PATH
+from bot.constants.bot_settings import WEBAPP_HOST, WEBAPP_PORT
+
 from bot.handlers import bot, dp
 from bot.bot_creater import logger
 
 
 async def on_startup(dp):
-    await logger.info()
+    await logger.info("WEBHOOK-START!")
     await bot.set_webhook(WEBHOOK_URL)
     # insert code here to run it after start
 

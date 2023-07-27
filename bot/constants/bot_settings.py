@@ -2,8 +2,8 @@ from envparse import Env
 
 env = Env()
 
-BOT_TOKEN = env.str("TG_BOT_TOKEN", default="5527908760:AAG3wQicZhI_suBJVyrosjCA0SCzXmiSrUo")
-API_KEY = "75dj44brKAn96vj58hiaurfpmrCLRJDt"
+BOT_TOKEN = env.str("TG_BOT_TOKEN")
+API_KEY = env.str("API_KEY")
 BOT_DEBUG = env.bool("BOT_DEBUG", default=True)
 
 
@@ -17,5 +17,10 @@ WEBAPP_HOST = 'localhost'  # or ip
 WEBAPP_PORT = 8000
 
 
-CHAT_ID_BEAR = -804109204
+# REAL_CHAT_ID =
 CHAT_ID_TEST = -951650833
+ADMIN_ID = 1338248618
+
+FIRST_CHECK_TIME = 5
+SECOND_CHECK_TIME = 8
+THIRD_CHECK_TIME = 13

@@ -1,6 +1,6 @@
 from aiogram import Bot
 from aiogram import Dispatcher
-from constants.bot_settings import BOT_TOKEN
+from bot.constants.bot_settings import BOT_TOKEN
 from aiologger import Logger
 from aiologger.handlers.files import AsyncFileHandler
 

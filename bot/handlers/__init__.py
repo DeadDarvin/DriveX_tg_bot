@@ -1,2 +1,2 @@
-from .users_handlers import bot
-from .users_handlers import dp
+from .user_handlers import bot
+from .user_handlers import dp

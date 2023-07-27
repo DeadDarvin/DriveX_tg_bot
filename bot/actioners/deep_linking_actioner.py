@@ -3,7 +3,6 @@ from bot.bot_creater import logger
 from typing import Optional
 import base64
 import re
-import json
 from datetime import datetime
 
 
@@ -20,7 +19,7 @@ async def _email_handler(decoded_email: str, user_data: dict):
     """ Handle request to api and getting user_info """
     user_data["email"] = decoded_email
     await logger.info(f"USER_WITH_EMAIL_DATA: {user_data}")
-    await send_user_tg_to_api(json.dumps(user_data))
+    await send_user_tg_to_api(user_data)
 
 
 async def _is_valid_parameter_key(param_string) -> Optional[str]:

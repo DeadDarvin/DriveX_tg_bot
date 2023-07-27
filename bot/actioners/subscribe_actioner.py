@@ -3,7 +3,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot
 
 from bot.http_clients.drivex_client import send_subscribed_user_ack
-from bot.constants.bot_settings import FIRST_CHECK_TIME, SECOND_CHECK_TIME, THIRD_CHECK_TIME
 from bot.constants.texts import TEXT_IF_USER_SUBSCRIBED, TEXT_IF_USER_NOT_SUBSCRIBED
 from bot.constants.keyboards import IM_SUBSCRIBE_BUTTON
 from bot.bot_creater import logger
@@ -11,7 +10,6 @@ from bot.bot_creater import logger
 from datetime import datetime, timedelta
 from pytz import utc
 import asyncio
-import json
 
 
 check_time_delays = {
@@ -58,7 +56,7 @@ async def subscribe_status_message_actioner(bot: Bot, user_id, check_number: int
     #  Directly check
     is_subscribed_user = await check_user_subscribe(bot, user_id)
     if is_subscribed_user:
-        asyncio.create_task(send_subscribed_user_ack(json.dumps({"user_id": user_id})))
+        asyncio.create_task(send_subscribed_user_ack({"user_id": user_id}))
         await bot.send_message(user_id, text=TEXT_IF_USER_SUBSCRIBED)
 
         await logger.info(f"CHECK RESULT: user with id:{user_id} is already subscribed!")
@@ -69,5 +67,3 @@ async def subscribe_status_message_actioner(bot: Bot, user_id, check_number: int
         current_delay = check_time_delays[check_number+1]
         next_check_time = current_time + timedelta(seconds=current_delay)
         await _create_delayed_check(bot, user_id, check_number+1, next_check_time)
-
-

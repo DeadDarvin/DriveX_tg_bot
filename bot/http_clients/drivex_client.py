@@ -11,7 +11,7 @@ from .decorators import retry_until_success, create_session
 
 async def _request(session: ClientSession, url: str, user_data: json):
     headers = {"API_KEY": API_KEY}
-    async with session.post(url, data=user_data, ssl=False, headers=headers) as response:
+    async with session.post(url, json=user_data, ssl=False, headers=headers) as response:
         good_code = False
         await logger.info(f"REQUEST: user_data={user_data}\n"
                           f"status_code={response.status}, response={await response.text()}")
@@ -24,6 +24,7 @@ async def _request(session: ClientSession, url: str, user_data: json):
 @retry_until_success(attempts=USER_DATA_ATTEMPTS, pause=PAUSE_BETWEEN_REQUESTS)
 async def send_user_tg_to_api(session: ClientSession, user_data: json):
     await logger.debug(user_data)
+    await logger.debug(type(user_data))
     try:
         is_completed = await _request(session, USER_DATA_ENDPOINT, user_data)
         return is_completed

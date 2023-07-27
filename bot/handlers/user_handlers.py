@@ -11,9 +11,9 @@ from bot.constants.bot_settings import ADMIN_ID
 from bot.bot_creater import logger
 from bot.actioners.subscribe_actioner import check_user_subscribe
 from typing import Optional
-import json
 import asyncio
 from datetime import datetime
+
 
 async def _extract_referral_code(encoded_string):
     """
@@ -50,7 +50,7 @@ async def start(message: types.Message):
         asyncio.create_task(deep_linking_handler(encoded_payload, user_data))  # Will be payload-handle
     else:
         await logger.info(f"{datetime.now()}:::USER_ID:{user_id}:::WITHOUT_PAYLOAD!")
-        asyncio.create_task(send_user_tg_to_api(json.dumps(user_data)))  # Send without payload
+        asyncio.create_task(send_user_tg_to_api(user_data))  # Send without payload
 
     is_subscribed = await check_user_subscribe(bot, user_id)
     if not is_subscribed:
@@ -73,6 +73,9 @@ async def start(message: types.Message):
 async def get_chat_id(message: types.Message):
     chat_id = message.chat.id
     await bot.send_message(ADMIN_ID, text=f"Айди нашего чата: {chat_id}")
+    new_user_id = message.new_chat_members[0].id
+    await logger.info(f"{datetime.now()}:::USER_ID:{new_user_id}:::JUST NOW SUBSCRIBED!")
+    asyncio.create_task(send_subscribed_user_ack({"user_id": new_user_id}))
 
 
 @dp.callback_query_handler(text="subscribe")
@@ -81,4 +84,4 @@ async def check_user_is_subscribed(callback: types.CallbackQuery):
     is_subscribed = await check_user_subscribe(bot, user_id)
     await logger.info(f"{datetime.now()}:::USER_ID:{user_id}:::CLICK_SUBS_BUTTON!")
     if is_subscribed:
-        asyncio.create_task(send_subscribed_user_ack(json.dumps({"user_id": user_id})))
+        asyncio.create_task(send_subscribed_user_ack({"user_id": user_id}))

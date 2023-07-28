@@ -19,7 +19,7 @@ RUN python3 -m pip install --user --upgrade pip && \
 
 COPY . .
 WORKDIR .
-EXPOSE 8000
+EXPOSE 8888
 
 # Execute
 CMD ["python", "main.py"]

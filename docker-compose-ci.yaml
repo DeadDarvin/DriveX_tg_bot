@@ -7,15 +7,10 @@ services:
     environment:
       TG_BOT_TOKEN: bot_token
       API_KEY: api_key
-      BOT_DEBUG: True
+      WEBAPP_HOST: "0.0.0.0"
+      BOT_DEBUG: False
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8888:8000"
-    networks:
-      - custom
-
-networks:
-  custom:
-    driver: bridge
+      - "8888:8888"

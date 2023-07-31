@@ -14,7 +14,7 @@ import asyncio
 
 
 check_time_delays = {
-    2: 6, 3: 6, 4: 6, 5: 9, 6: 3, 7: 60, 8: 60, 9: 60, 10: 60,
+    1: 60, 2: 60, 3: 60, 4: 60, 5: 60, 6: 60, 7: 60, 8: 60, 9: 60, 10: 60,
     11: 300, 12: 300, 13: 300, 14: 300, 15: 300, 16: 300, 17: 300, 18: 300, 19: 300, 20: 300
 }
 
@@ -40,7 +40,7 @@ async def _create_delayed_check(bot: Bot, user_id, check_number: int, run_time):
     scheduler.start()
 
 
-async def subscribe_status_message_actioner(bot: Bot, user_id, check_number: int = 1):
+async def subscribe_status_message_actioner(bot: Bot, user_id, check_number: int = 0):
     """
     General actioner for creation delayed_examinations.
     Check user subscribe status. Function create next delayed_examination if user is not subscribed yed.
@@ -49,10 +49,9 @@ async def subscribe_status_message_actioner(bot: Bot, user_id, check_number: int
     """
     await logger.info(f"{datetime.now()}:::USER_ID:{user_id}:::START {check_number} EXAMINATION!")
 
-    if check_number == 6:  # Last check
-        return
-    if check_number == 4:
+    if check_number == 20:  # Last examination finished!
         await bot.send_message(user_id, text=TEXT_IF_USER_NOT_SUBSCRIBED, reply_markup=IM_SUBSCRIBE_BUTTON)
+        return
 
     #  Directly check
     is_subscribed_user = await check_user_subscribe(bot, user_id)

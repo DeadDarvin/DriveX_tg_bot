@@ -5,7 +5,7 @@ from aiogram import Bot
 from bot.http_clients.drivex_client import send_subscribed_user_ack
 from bot.constants.texts import TEXT_IF_USER_SUBSCRIBED, TEXT_IF_USER_NOT_SUBSCRIBED
 from bot.constants.keyboards import IM_SUBSCRIBE_BUTTON
-from bot.constants.bot_settings import CHANEL_ID
+from bot.constants.bot_settings import CHANNEL_ID
 from bot.bot_creater import logger
 
 from datetime import datetime, timedelta
@@ -22,7 +22,7 @@ check_time_delays = {
 async def check_user_subscribe(bot, user_id) -> bool:
     await logger.debug("Run check_user_subscribe function!")
 
-    user_status = await bot.get_chat_member(chat_id=CHANEL_ID, user_id=user_id)  # -1001905613285
+    user_status = await bot.get_chat_member(chat_id=CHANNEL_ID, user_id=user_id)  # -1001905613285
     await logger.debug(type(user_status))
     if isinstance(user_status, ChatMemberLeft):
         return False
